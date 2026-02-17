@@ -1,0 +1,60 @@
+$primary: #3498db;
+$theme: dark;
+
+// Миксин для кнопки.
+// Принимает цвет фона в качестве параметра и задаёт базовый внешний вид кнопки.
+@mixin button($color) {
+    padding: 10px 14px;
+    background: $color;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+// Вложенный элемент карточки товара
+.product-card {
+    padding: 16px;
+    border: 1px solid #ddd;
+    width: 300px;
+
+    // Условный блок для тёмной темы.
+    // Срабатывает только если значение переменной $theme равно dark.
+    @if $theme == dark {
+        background: #222;
+        color: white;
+        border-color: #444;
+    }
+
+    &__photo {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        background: #eee;
+        margin-bottom: 10px;
+    }
+
+    &__title {
+        font-size: 20px;
+        margin: 10px 0;
+    }
+
+    &__desc {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 15px;
+    }
+
+    // Модификатор карточки (стиль сохранён, но в HTML не используется)
+    &--sale {
+        border: 2px solid $primary;
+    }
+}
+
+// Кнопка
+.buy-btn {
+    // Подключаем миксин и передаём основной цвет
+    @include button($primary);
+    display: inline-block;
+}

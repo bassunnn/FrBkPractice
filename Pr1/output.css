@@ -1,0 +1,40 @@
+.product-card {
+  padding: 16px;
+  border: 1px solid #ddd;
+  width: 300px;
+  background: #222;
+  color: white;
+  border-color: #444;
+}
+.product-card__photo {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  background: #eee;
+  margin-bottom: 10px;
+}
+.product-card__title {
+  font-size: 20px;
+  margin: 10px 0;
+}
+.product-card__desc {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 15px;
+}
+.product-card--sale {
+  border: 2px solid #3498db;
+}
+
+.buy-btn {
+  padding: 10px 14px;
+  background: #3498db;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+}
+
+/*# sourceMappingURL=output.css.map */
