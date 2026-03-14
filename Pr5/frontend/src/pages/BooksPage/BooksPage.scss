@@ -1,0 +1,324 @@
+// Цветовая схема
+$bg: #0b0f19;                    // темный фон
+$panel: rgba(255, 255, 255, 0.03); // панели
+$border: rgba(255, 255, 255, 0.10); // границы
+$text: #e7eaf3;                   // светлый текст
+
+$primary: rgba(99, 102, 241, 0.55);    // основной цвет (кнопки)
+$primaryBg: rgba(99, 102, 241, 0.18);  // фон для основного цвета
+
+$danger: rgba(239, 68, 68, 0.45);      // цвет опасных действий (удаление)
+$dangerBg: rgba(239, 68, 68, 0.12);    // фон для опасных действий
+
+// Миксины (переиспользуемые стили)
+@mixin card($radius: 12px) {
+  border-radius: $radius;
+  border: 1px solid $border;
+  background: $panel;
+}
+
+@mixin container($w: 1000px) {
+  max-width: $w;
+  width: 100%;
+  margin: 0 auto;
+}
+
+// Основные стили страницы
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: $bg;
+  color: $text;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+// Шапка
+.header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+
+  &__inner {
+    @include container();
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__right {
+    opacity: 0.75;
+    font-size: 13px;
+  }
+
+  .brand {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    font-size: 18px;
+  }
+}
+
+// Основной контент
+.main {
+  flex: 1;
+  display: flex;
+}
+
+.container {
+  @include container();
+  padding: 20px;
+}
+
+// Панель инструментов
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  .title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+  }
+}
+
+// Кнопки
+.btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &--primary {
+    background: $primaryBg;
+    border: 1px solid $primary;
+
+    &:hover {
+      background: rgba(99, 102, 241, 0.25);
+    }
+  }
+
+  &--danger {
+    background: $dangerBg;
+    border: 1px solid $danger;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+  }
+}
+
+// Список книг
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// Пустой список
+.empty {
+  padding: 30px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  opacity: 0.85;
+  font-size: 16px;
+}
+
+// Карточка книги
+.bookRow {
+  @include card(12px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.bookMain {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  flex: 1;
+
+  .bookId {
+    opacity: 0.6;
+    font-size: 12px;
+    font-family: monospace;
+  }
+
+  .bookTitle {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .bookAuthor {
+    opacity: 0.9;
+  }
+
+  .bookCategory {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+
+  .bookPrice {
+    font-weight: 600;
+    color: #4ade80;
+  }
+
+  .bookStock {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+  .bookYear {
+    font-size: 13px;
+    opacity: 0.7;
+  }
+}
+
+.bookActions {
+  display: flex;
+  gap: 8px;
+}
+
+// Подвал
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  margin-top: 20px;
+
+  &__inner {
+    @include container();
+    padding: 14px 16px;
+    opacity: 0.7;
+    font-size: 13px;
+    text-align: center;
+  }
+}
+
+// Затемнение фона для модального окна
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+// Само модальное окно
+.modal {
+  width: 100%;
+  max-width: 550px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #151e2f;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+
+  &__header {
+    padding: 16px;
+    border-bottom: 1px solid $border;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid $border;
+  }
+}
+
+// Иконка-кнопка
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 16px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+// Форма
+.form {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+// Поле ввода
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.input {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  outline: none;
+  font-size: 15px;
+
+  &:focus {
+    border-color: rgba(99, 102, 241, 0.6);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &[type="number"] {
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+}
+
+// Текстarea
+textarea.input {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
