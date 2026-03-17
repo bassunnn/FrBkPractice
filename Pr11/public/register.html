@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Регистрация</title>
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <h1>Регистрация</h1>
+  <form id="registerForm">
+    <input type="text" id="username" placeholder="Имя пользователя" required>
+    <input type="password" id="password" placeholder="Пароль" required>
+    <select id="role">
+      <option value="user">Пользователь</option>
+      <option value="seller">Продавец</option>
+      <option value="admin">Администратор</option>
+    </select>
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+  <p>Уже есть аккаунт? <a href="login.html">Войти</a></p>
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('role').value;
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role })
+      });
+      if (response.ok) {
+        alert('Регистрация успешна! Теперь войдите.');
+        window.location.href = 'login.html';
+      } else {
+        const err = await response.json();
+        alert('Ошибка: ' + err.error);
+      }
+    });
+  </script>
+</body>
+</html>

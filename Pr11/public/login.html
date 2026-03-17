@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Вход</title>
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <h1>Вход</h1>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="Имя пользователя" required>
+    <input type="password" id="password" placeholder="Пароль" required>
+    <button type="submit">Войти</button>
+  </form>
+  <p>Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      if (response.ok) {
+        const { accessToken, refreshToken } = await response.json();
+        setTokens(accessToken, refreshToken);
+        window.location.href = 'index.html';
+      } else {
+        alert('Ошибка входа');
+      }
+    });
+  </script>
+</body>
+</html>

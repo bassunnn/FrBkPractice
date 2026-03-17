@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Товары</title>
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <h1>Список товаров</h1>
+  <div id="userInfo"></div>
+  <div id="products"></div>
+  <div id="adminLink" style="display:none;"><a href="admin.html">Управление пользователями</a></div>
+  <div id="sellerLink" style="display:none;"><a href="product-form.html">Добавить товар</a></div>
+  <button onclick="logout()">Выйти</button>
+  <script>
+    async function loadProducts() {
+      const response = await apiRequest('/products');
+      if (response.ok) {
+        const products = await response.json();
+        const container = document.getElementById('products');
+        container.innerHTML = '<h2>Товары:</h2>';
+        products.forEach(p => {
+          container.innerHTML += `<div>
+            <strong>${p.name}</strong> - ${p.price} руб.
+            <a href="product-form.html?id=${p.id}">Редактировать</a>
+            <button onclick="deleteProduct(${p.id})">Удалить</button>
+          </div>`;
+        });
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Удалить товар?')) return;
+      const response = await apiRequest(`/products/${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        loadProducts();
+      } else {
+        alert('Ошибка удаления');
+      }
+    }
+
+    async function loadUserInfo() {
+      const response = await apiRequest('/auth/me');
+      if (response.ok) {
+        const user = await response.json();
+        document.getElementById('userInfo').innerHTML = `Вы вошли как ${user.username} (${user.role})`;
+        // Показываем ссылки в зависимости от роли
+        if (user.role === 'admin') {
+          document.getElementById('adminLink').style.display = 'block';
+          document.getElementById('sellerLink').style.display = 'block'; // админ тоже может добавлять товары
+        } else if (user.role === 'seller') {
+          document.getElementById('sellerLink').style.display = 'block';
+        }
+      } else {
+        // Не авторизован - перенаправляем на вход
+        window.location.href = 'login.html';
+      }
+    }
+
+    function logout() {
+      clearTokens();
+      window.location.href = 'login.html';
+    }
+
+    loadUserInfo().then(loadProducts);
+  </script>
+</body>
+</html>

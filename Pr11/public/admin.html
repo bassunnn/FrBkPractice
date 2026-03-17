@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Управление пользователями</title>
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <h1>Пользователи</h1>
+  <div id="users"></div>
+  <a href="index.html">На главную</a>
+  <script>
+    async function loadUsers() {
+      const response = await apiRequest('/users');
+      if (response.ok) {
+        const users = await response.json();
+        const container = document.getElementById('users');
+        container.innerHTML = '';
+        users.forEach(u => {
+          container.innerHTML += `
+            <div>
+              <span>${u.username} (${u.role})</span>
+              <button onclick="editUser(${u.id})">Редактировать</button>
+              <button onclick="deleteUser(${u.id})">Удалить</button>
+            </div>
+          `;
+        });
+      } else {
+        alert('Не удалось загрузить пользователей');
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Удалить пользователя?')) return;
+      const response = await apiRequest(`/users/${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        loadUsers();
+      } else {
+        alert('Ошибка');
+      }
+    }
+
+    function editUser(id) {
+      const newRole = prompt('Введите новую роль (user, seller, admin):');
+      if (newRole) {
+        apiRequest(`/users/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ role: newRole })
+        }).then(res => {
+          if (res.ok) loadUsers();
+          else alert('Ошибка обновления');
+        });
+      }
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

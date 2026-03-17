@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Товар</title>
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <h1 id="formTitle">Создание товара</h1>
+  <form id="productForm">
+    <input type="text" id="name" placeholder="Название" required>
+    <input type="number" id="price" placeholder="Цена" required>
+    <textarea id="description" placeholder="Описание"></textarea>
+    <button type="submit">Сохранить</button>
+  </form>
+  <a href="index.html">Назад</a>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    async function loadProduct() {
+      if (!productId) return;
+      document.getElementById('formTitle').innerText = 'Редактирование товара';
+      const response = await apiRequest(`/products/${productId}`);
+      if (response.ok) {
+        const product = await response.json();
+        document.getElementById('name').value = product.name;
+        document.getElementById('price').value = product.price;
+        document.getElementById('description').value = product.description || '';
+      }
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const price = document.getElementById('price').value;
+      const description = document.getElementById('description').value;
+      const method = productId ? 'PUT' : 'POST';
+      const url = productId ? `/products/${productId}` : '/products';
+      const response = await apiRequest(url, {
+        method,
+        body: JSON.stringify({ name, price, description })
+      });
+      if (response.ok) {
+        window.location.href = 'index.html';
+      } else {
+        alert('Ошибка сохранения');
+      }
+    });
+
+    loadProduct();
+  </script>
+</body>
+</html>
