@@ -63,12 +63,27 @@ const ProductList = () => {
         <div className="product-grid">
           {products.map(product => (
             <div key={product.id} className="product-card">
+
+              {product.image && (
+                <img
+                  src={`http://localhost:3000${product.image}`}
+                  alt={product.name}
+                  className="product-image"
+                />
+              )}
+
               <h3>{product.name}</h3>
-              <p>{product.description.length > 100 
-                ? product.description.substring(0, 100) + '...' 
-                : product.description}
+
+              <p>
+                {product.description.length > 100
+                  ? product.description.substring(0, 100) + '...'
+                  : product.description}
               </p>
-              <div className="price">{product.price.toLocaleString()} ₽</div>
+
+              <div className="price">
+                {product.price.toLocaleString()} ₽
+              </div>
+
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                 <Link 
                   to={`/products/${product.id}`} 
@@ -77,6 +92,7 @@ const ProductList = () => {
                 >
                   Подробнее
                 </Link>
+
                 <button
                   onClick={() => handleDelete(product.id)}
                   className="btn btn-danger"
@@ -84,6 +100,7 @@ const ProductList = () => {
                   Удалить
                 </button>
               </div>
+
             </div>
           ))}
         </div>

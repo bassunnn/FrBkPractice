@@ -14,7 +14,7 @@ let products = [];
 // Middleware для парсинга JSON
 app.use(express.json());
 
-// ================== Swagger настройка ==================
+// Swagger настройка
 const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
@@ -75,7 +75,7 @@ const swaggerOptions = {
 const specs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// ================== Вспомогательные функции ==================
+// Вспомогательные функции
 const hashPassword = async (password) => {
     const saltRounds = 10;
     return bcrypt.hash(password, saltRounds);
@@ -93,7 +93,7 @@ const findProductById = (id) => {
     return products.find(p => p.id === id);
 };
 
-// ================== Маршруты аутентификации ==================
+// Маршруты аутентификации 
 
 /**
  * @swagger
@@ -242,7 +242,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// ================== Маршруты для товаров ==================
+// Маршруты для товаров
 
 /**
  * @swagger
@@ -470,7 +470,7 @@ app.delete('/api/products/:id', (req, res) => {
     res.status(204).send();
 });
 
-// ================== Запуск сервера ==================
+// Запуск сервера
 app.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
     console.log(`Swagger UI доступен по адресу http://localhost:${PORT}/api-docs`);

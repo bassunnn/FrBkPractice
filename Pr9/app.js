@@ -9,17 +9,17 @@ app.use(express.json());
 
 const PORT = 3000;
 
-// ---- Константы для токенов (в продакшене использовать .env) ----
+// Константы для токенов
 const ACCESS_SECRET = 'your_access_secret_key';
 const REFRESH_SECRET = 'your_refresh_secret_key';
 const ACCESS_EXPIRES_IN = '15m';      // access живёт 15 минут
 const REFRESH_EXPIRES_IN = '7d';      // refresh живёт 7 дней
 
-// ---- Хранилища (вместо БД) ----
+// Хранилища
 const users = [];
 const refreshTokens = new Set();
 
-// ---- Утилиты для генерации токенов ----
+// Для генерации генерации токенов
 const generateAccessToken = (user) => {
   return jwt.sign(
     { sub: user.id, username: user.username },
@@ -36,7 +36,7 @@ const generateRefreshToken = (user) => {
   );
 };
 
-// ========== НАСТРОЙКА SWAGGER ==========
+// Настройка swagger
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -118,7 +118,7 @@ const swaggerOptions = {
 const specs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// ========== МАРШРУТЫ ==========
+// Маршруты
 
 /**
  * @swagger
@@ -320,7 +320,7 @@ app.get('/api/protected', (req, res) => {
   }
 });
 
-// ---- Запуск сервера ----
+// Запуск сервера
 app.listen(PORT, () => {
   console.log(`Сервер запущен на http://localhost:${PORT}`);
   console.log(`Swagger UI доступен по адресу http://localhost:${PORT}/api-docs`);

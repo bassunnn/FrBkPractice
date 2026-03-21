@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');          // <-- добавлено
+const jwt = require('jsonwebtoken');          // добавление токенов
 const { nanoid } = require('nanoid');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
@@ -8,7 +8,7 @@ const swaggerUi = require('swagger-ui-express');
 const app = express();
 const PORT = 3000;
 
-// ---------- Конфигурация JWT ----------
+// Конфигурация JWT
 const JWT_SECRET = 'access_secret';            // секретный ключ подписи
 const ACCESS_EXPIRES_IN = '15m';                // время жизни токена (15 минут)
 
@@ -19,7 +19,7 @@ let products = [];
 // Middleware для парсинга JSON
 app.use(express.json());
 
-// ================== Swagger настройка ==================
+// Swagger настройка
 const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
@@ -94,7 +94,7 @@ const swaggerOptions = {
 const specs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// ================== Вспомогательные функции ==================
+// Вспомогательные функции
 const hashPassword = async (password) => {
     const saltRounds = 10;
     return bcrypt.hash(password, saltRounds);
@@ -112,7 +112,7 @@ const findProductById = (id) => {
     return products.find(p => p.id === id);
 };
 
-// ================== Middleware для проверки JWT ==================
+// Middleware для проверки JWT
 function authMiddleware(req, res, next) {
     const header = req.headers.authorization || '';
     const [scheme, token] = header.split(' ');
@@ -130,7 +130,7 @@ function authMiddleware(req, res, next) {
     }
 }
 
-// ================== Маршруты аутентификации ==================
+// Маршруты аутентификации
 
 /**
  * @swagger
@@ -326,9 +326,7 @@ app.get('/api/auth/me', authMiddleware, (req, res) => {
     res.json(userWithoutPassword);
 });
 
-// ================== Маршруты для товаров ==================
-// (все маршруты /api/products остаются без изменений, 
-//  при желании их тоже можно защитить, но по заданию не требуется)
+
 
 /**
  * @swagger
@@ -556,7 +554,7 @@ app.delete('/api/products/:id', (req, res) => {
     res.status(204).send();
 });
 
-// ================== Запуск сервера ==================
+// Запуск сервера
 app.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
     console.log(`Swagger UI доступен по адресу http://localhost:${PORT}/api-docs`);

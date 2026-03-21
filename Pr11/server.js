@@ -68,7 +68,7 @@ function roleMiddleware(allowedRoles) {
   };
 }
 
-// ----- Маршруты аутентификации -----
+// Маршруты аутентификации
 
 // Регистрация (доступна всем, включая гостей)
 app.post('/api/auth/register', async (req, res) => {
@@ -150,7 +150,7 @@ app.get('/api/auth/me', authMiddleware, (req, res) => {
   res.json(req.user);
 });
 
-// ----- Маршруты для пользователей (только admin) -----
+// Маршруты для пользователей (только admin)
 
 // Получить всех пользователей
 app.get('/api/users', authMiddleware, roleMiddleware(['admin']), (req, res) => {
@@ -199,7 +199,7 @@ app.delete('/api/users/:id', authMiddleware, roleMiddleware(['admin']), (req, re
   res.status(204).send();
 });
 
-// ----- Маршруты для товаров -----
+// Маршруты для товаров
 
 // Создать товар (продавец или админ)
 app.post('/api/products', authMiddleware, roleMiddleware(['seller', 'admin']), (req, res) => {
