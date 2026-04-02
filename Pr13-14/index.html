@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4285f4">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Заметки">
+  <title>Мои заметки</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chota/0.9.2/chota.min.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon-64x64.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="/icons/favicon-128x128.png">
+  <link rel="icon" type="image/png" sizes="256x256" href="/icons/favicon-256x256.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/favicon-512x512.png">
+  <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #4285f4;
+      margin-bottom: 10px;
+    }
+    .note-form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .note-form .form-group {
+      display: flex;
+      gap: 10px;
+    }
+    .note-form input {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    .note-form input:focus {
+      outline: none;
+      border-color: #4285f4;
+    }
+    .note-form button {
+      padding: 12px 24px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .note-form button:hover {
+      background-color: #3367d6;
+    }
+    .notes-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .note-item {
+      background: white;
+      padding: 15px 20px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .note-item .note-text {
+      flex: 1;
+      word-break: break-word;
+    }
+    .note-item .note-date {
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
+    }
+    .note-item .delete-btn {
+      background: #ff5252;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+      transition: background-color 0.2s;
+    }
+    .note-item .delete-btn:hover {
+      background: #ff1744;
+    }
+    .empty-message {
+      text-align: center;
+      color: #999;
+      padding: 40px;
+      font-size: 18px;
+    }
+    .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+      z-index: 1000;
+    }
+    .status-bar.offline {
+      background: #ff9800;
+      color: white;
+    }
+    .status-bar.online {
+      background: #4caf50;
+      color: white;
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .note-form .form-group {
+        flex-direction: column;
+      }
+      .note-form button {
+        width: 100%;
+      }
+      .note-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .note-item .delete-btn {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="statusBar" class="status-bar offline">
+    <span id="statusText">📡 Режим офлайн</span>
+  </div>
+
+  <div class="header">
+    <h1>📝 Мои заметки</h1>
+    <p>Простое приложение для заметок, работающее офлайн</p>
+  </div>
+
+  <form class="note-form" id="noteForm">
+    <div class="form-group">
+      <input 
+        type="text" 
+        id="noteInput" 
+        placeholder="Введите текст заметки..." 
+        autocomplete="off"
+        required
+      >
+      <button type="submit">Добавить</button>
+    </div>
+  </form>
+
+  <div id="notesContainer">
+    <ul class="notes-list" id="notesList"></ul>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
