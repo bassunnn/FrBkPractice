@@ -1,0 +1,41 @@
+<div class="notes-page">
+  <form class="note-form" id="noteForm">
+    <div class="form-group">
+      <input
+        type="text"
+        id="noteInput"
+        placeholder="Введите текст заметки..."
+        autocomplete="off"
+        required
+      >
+      <button type="submit">Добавить</button>
+    </div>
+  </form>
+
+  <form class="note-form" id="reminderForm" style="margin-top: 1rem;">
+    <div class="form-group-reminder">
+      <input
+        type="text"
+        id="reminderText"
+        placeholder="Текст напоминания..."
+        autocomplete="off"
+        required
+      >
+      <input
+        type="datetime-local"
+        id="reminderTime"
+        required
+      >
+      <button type="submit">Добавить с напоминанием</button>
+    </div>
+  </form>
+
+  <div id="notesContainer">
+    <ul class="notes-list" id="notesList"></ul>
+  </div>
+
+  <div class="push-controls" id="pushControls">
+    <button class="button primary" id="subscribeBtn">Включить уведомления</button>
+    <button class="button secondary" id="unsubscribeBtn" style="display: none;">Отключить уведомления</button>
+  </div>
+</div>
