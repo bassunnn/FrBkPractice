@@ -1,12 +1,10 @@
-/**
- * Service Worker для офлайн-работы приложения заметок
- * Кэширует статику и работает как прокси для запросов
- */
+// Service Worker для офлайн-работы приложения заметок
+// Кэширует статику и работает как прокси для запросов
 
 // Версия кэша (увеличивать при изменениях)
 const CACHE_NAME = 'notes-cache-v2';
 
-// Ресурсы для кэширования
+// Список файлов для кэширования
 const ASSETS = [
   '/',
   '/index.html',
@@ -25,13 +23,10 @@ const ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/chota/0.9.2/chota.min.css'
 ];
 
-/**
- * Обработчик установки Service Worker
- * Кэширует все статические ресурсы
- */
+// Установка Service Worker — кэширует все файлы
 self.addEventListener('install', event => {
   console.log('[SW] Установка Service Worker, версия:', CACHE_NAME);
-  
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -48,13 +43,10 @@ self.addEventListener('install', event => {
   );
 });
 
-/**
- * Обработчик активации Service Worker
- * Удаляет старые версии кэша
- */
+// Активация Service Worker — удаляет старые кэши
 self.addEventListener('activate', event => {
   console.log('[SW] Активация Service Worker');
-  
+
   event.waitUntil(
     caches.keys()
       .then(cacheNames => {
@@ -74,16 +66,13 @@ self.addEventListener('activate', event => {
   );
 });
 
-/**
- * Обработчик запросов
- * Стратегия: Cache First, затем Network (для офлайн-работы)
- */
+// Обработка запросов — сначала кэш, потом сеть
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
   // Пропускаем запросы к другим доменам (кроме CDN)
-  if (url.origin !== location.origin && 
+  if (url.origin !== location.origin &&
       url.origin !== 'https://cdnjs.cloudflare.com') {
     return;
   }
@@ -113,12 +102,12 @@ self.addEventListener('fetch', event => {
           })
           .catch(error => {
             console.error('[SW] Ошибка сети:', error);
-            
+
             // Для навигационных запросов возвращаем index.html
             if (request.mode === 'navigate') {
               return caches.match('/index.html');
             }
-            
+
             // Возвращаем пустой ответ для других запросов
             return new Response('', {
               status: 404,
@@ -129,9 +118,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-/**
- * Обработчик сообщений от основного приложения
- */
+// Обработка сообщений от приложения
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();

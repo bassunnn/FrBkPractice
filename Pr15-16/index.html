@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- Основные настройки страницы -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#4285f4">
@@ -9,14 +8,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Заметки">
-  
+
   <title>Мои заметки</title>
-  
-  <!-- Подключение стилей и манифеста -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chota/0.9.2/chota.min.css">
+
   <link rel="manifest" href="/manifest.json">
-  
-  <!-- Иконки для разных размеров -->
+
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png">
@@ -25,35 +21,79 @@
   <link rel="icon" type="image/png" sizes="256x256" href="/icons/favicon-256x256.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icons/favicon-512x512.png">
   <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
-  
-  <!-- Стили приложения -->
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
       background-color: #f5f5f5;
+      min-height: 100vh;
     }
-    .header {
+
+    header {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
-    .header h1 {
+
+    header h1 {
       color: #4285f4;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
     }
-    .note-form {
+
+    header h1 img {
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    nav button {
+      padding: 10px 20px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    nav button:hover {
+      background-color: #3367d6;
+    }
+
+    nav button.active {
+      background-color: #2854a7;
+      box-shadow: 0 0 0 2px #1a3a6e;
+    }
+
+    main {
       background: white;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .note-form {
       margin-bottom: 20px;
     }
+
     .note-form .form-group {
       display: flex;
       gap: 10px;
     }
+
     .note-form input {
       flex: 1;
       padding: 12px;
@@ -61,10 +101,12 @@
       border-radius: 6px;
       font-size: 16px;
     }
+
     .note-form input:focus {
       outline: none;
       border-color: #4285f4;
     }
+
     .note-form button {
       padding: 12px 24px;
       background-color: #4285f4;
@@ -75,14 +117,17 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
+
     .note-form button:hover {
       background-color: #3367d6;
     }
+
     .notes-list {
       list-style: none;
       padding: 0;
       margin: 0;
     }
+
     .note-item {
       background: white;
       padding: 15px 20px;
@@ -94,6 +139,7 @@
       align-items: center;
       animation: slideIn 0.3s ease;
     }
+
     @keyframes slideIn {
       from {
         opacity: 0;
@@ -104,15 +150,18 @@
         transform: translateY(0);
       }
     }
+
     .note-item .note-text {
       flex: 1;
       word-break: break-word;
     }
+
     .note-item .note-date {
       font-size: 12px;
       color: #999;
       margin-top: 5px;
     }
+
     .note-item .delete-btn {
       background: #ff5252;
       color: white;
@@ -124,15 +173,18 @@
       margin-left: 10px;
       transition: background-color 0.2s;
     }
+
     .note-item .delete-btn:hover {
       background: #ff1744;
     }
+
     .empty-message {
       text-align: center;
       color: #999;
       padding: 40px;
       font-size: 18px;
     }
+
     .status-bar {
       position: fixed;
       top: 0;
@@ -143,15 +195,94 @@
       font-size: 14px;
       z-index: 1000;
     }
+
     .status-bar.offline {
       background: #ff9800;
       color: white;
     }
+
     .status-bar.online {
       background: #4caf50;
       color: white;
       display: none;
     }
+
+    .push-controls {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .push-controls .button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .push-controls .button.primary {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .push-controls .button.primary:hover {
+      background-color: #43a047;
+    }
+
+    .push-controls .button.secondary {
+      background-color: #ff5252;
+      color: white;
+    }
+
+    .push-controls .button.secondary:hover {
+      background-color: #ff1744;
+    }
+
+    .about-page h2 {
+      color: #4285f4;
+      margin-top: 0;
+    }
+
+    .about-page h3 {
+      color: #333;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    .about-page ul {
+      padding-left: 20px;
+    }
+
+    .about-page li {
+      margin-bottom: 5px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 2000;
+      animation: fadeInOut 3s ease;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+
     @media (max-width: 600px) {
       .note-form .form-group {
         flex-direction: column;
@@ -172,40 +303,26 @@
   </style>
 </head>
 <body>
-  <!-- Индикатор статуса сети (онлайн/офлайн) -->
   <div id="statusBar" class="status-bar offline">
     <span id="statusText">📡 Режим офлайн</span>
   </div>
 
-  <!-- Заголовок приложения -->
-  <div class="header">
+  <header>
     <h1>
-      <img src="/icons/favicon-64x64.png" alt="Иконка" style="width: 48px; height: 48px; vertical-align: middle; margin-right: 10px;">
+      <img src="/icons/favicon-64x64.png" alt="Иконка" width="48" height="48">
       Мои заметки
     </h1>
     <p>Заметочки</p>
-  </div>
+  </header>
 
-  <!-- Форма для добавления заметок -->
-  <form class="note-form" id="noteForm">
-    <div class="form-group">
-      <input
-        type="text"
-        id="noteInput"
-        placeholder="Введите текст заметки..."
-        autocomplete="off"
-        required
-      >
-      <button type="submit">Добавить</button>
-    </div>
-  </form>
+  <nav>
+    <button id="navHome" class="active">Главная</button>
+    <button id="navAbout">О приложении</button>
+  </nav>
 
-  <!-- Контейнер для списка заметок -->
-  <div id="notesContainer">
-    <ul class="notes-list" id="notesList"></ul>
-  </div>
+  <main id="app-content"></main>
 
-  <!-- Подключение скрипта приложения -->
+  <script src="/socket.io/socket.io.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

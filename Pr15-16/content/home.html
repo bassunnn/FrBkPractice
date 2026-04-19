@@ -1,0 +1,23 @@
+<div class="notes-page">
+  <form class="note-form" id="noteForm">
+    <div class="form-group">
+      <input
+        type="text"
+        id="noteInput"
+        placeholder="Введите текст заметки..."
+        autocomplete="off"
+        required
+      >
+      <button type="submit">Добавить</button>
+    </div>
+  </form>
+
+  <div id="notesContainer">
+    <ul class="notes-list" id="notesList"></ul>
+  </div>
+
+  <div class="push-controls" id="pushControls">
+    <button class="button primary" id="subscribeBtn">Включить уведомления</button>
+    <button class="button secondary" id="unsubscribeBtn" style="display: none;">Отключить уведомления</button>
+  </div>
+</div>

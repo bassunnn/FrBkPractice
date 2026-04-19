@@ -1,47 +1,34 @@
-/**
- * Приложение для управления заметками
- * Работает офлайн с использованием localStorage и Service Worker
- */
+// Главное приложение для управления заметками
+// Работает офлайн с localStorage и Service Worker
 
-// Ключ для localStorage
+// Ключ для хранения заметок в localStorage
 const STORAGE_KEY = 'notes';
 
-// Элементы DOM
+// Получаем элементы со страницы
 const noteForm = document.getElementById('noteForm');
 const noteInput = document.getElementById('noteInput');
 const notesList = document.getElementById('notesList');
 const statusBar = document.getElementById('statusBar');
 const statusText = document.getElementById('statusText');
 
-/**
- * Загрузка заметок из localStorage и отрисовка
- */
+// Загружает заметки из памяти и показывает на странице
 function loadNotes() {
   const notes = getNotesFromStorage();
   renderNotes(notes);
 }
 
-/**
- * Получение заметок из localStorage
- * @returns {Array} Массив заметок
- */
+// Читает заметки из localStorage
 function getNotesFromStorage() {
   const notesJson = localStorage.getItem(STORAGE_KEY);
   return notesJson ? JSON.parse(notesJson) : [];
 }
 
-/**
- * Сохранение заметок в localStorage
- * @param {Array} notes - Массив заметок для сохранения
- */
+// Сохраняет заметки в localStorage
 function saveNotesToStorage(notes) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
 }
 
-/**
- * Добавление новой заметки
- * @param {string} text - Текст заметки
- */
+// Добавляет новую заметку в список
 function addNote(text) {
   if (!text || !text.trim()) {
     return;
@@ -60,10 +47,7 @@ function addNote(text) {
   renderNotes(notes);
 }
 
-/**
- * Удаление заметки по ID
- * @param {number} id - ID заметки для удаления
- */
+// Удаляет заметку по ID
 function deleteNote(id) {
   const notes = getNotesFromStorage();
   const filteredNotes = notes.filter(note => note.id !== id);
@@ -71,10 +55,7 @@ function deleteNote(id) {
   renderNotes(filteredNotes);
 }
 
-/**
- * Отрисовка списка заметок
- * @param {Array} notes - Массив заметок для отрисовки
- */
+// Показывает список заметок на странице
 function renderNotes(notes) {
   if (notes.length === 0) {
     notesList.innerHTML = '<li class="empty-message">📭 Список заметок пуст. Добавьте первую заметку!</li>';
@@ -92,22 +73,13 @@ function renderNotes(notes) {
   `).join('');
 }
 
-/**
- * Экранирование HTML-символов для защиты от XSS
- * @param {string} text - Текст для экранирования
- * @returns {string} Экранированный текст
- */
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-/**
- * Форматирование даты
- * @param {string} isoString - ISO строка даты
- * @returns {string} Отформатированная дата
- */
+// Форматирует дату в читаемый вид
 function formatDate(isoString) {
   const date = new Date(isoString);
   const options = {
@@ -120,9 +92,7 @@ function formatDate(isoString) {
   return date.toLocaleDateString('ru-RU', options);
 }
 
-/**
- * Обновление индикатора статуса сети
- */
+// Обновляет статус подключения к интернету (онлайн/офлайн)
 function updateOnlineStatus() {
   if (navigator.onLine) {
     statusBar.className = 'status-bar online';
@@ -133,17 +103,14 @@ function updateOnlineStatus() {
   }
 }
 
-/**
- * Регистрация Service Worker
- */
+// Регистрирует Service Worker для офлайн-работы
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker
       .register('/sw.js')
       .then(registration => {
         console.log('Service Worker успешно зарегистрирован:', registration.scope);
-        
-        // Обновление статуса при изменении состояния SW
+
         registration.addEventListener('updatefound', () => {
           console.log('Service Worker обновляется...');
         });
@@ -152,7 +119,6 @@ function registerServiceWorker() {
         console.error('Ошибка регистрации Service Worker:', error);
       });
 
-    // Обработка сообщений от Service Worker
     navigator.serviceWorker.addEventListener('message', event => {
       if (event.data && event.data.type === 'SKIP_WAITING') {
         window.location.reload();
@@ -163,14 +129,10 @@ function registerServiceWorker() {
   }
 }
 
-/**
- * Инициализация приложения
- */
+// Запускает приложение при загрузке
 function init() {
-  // Загрузка заметок
   loadNotes();
 
-  // Обработчик отправки формы
   noteForm.addEventListener('submit', event => {
     event.preventDefault();
     const text = noteInput.value;
@@ -179,18 +141,16 @@ function init() {
     noteInput.focus();
   });
 
-  // Обработчики событий сети
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
   updateOnlineStatus();
 
-  // Регистрация Service Worker
   registerServiceWorker();
 
   console.log('Приложение инициализировано');
 }
 
-// Запуск приложения после загрузки DOM
+// Ждём загрузки страницы, затем запускаем приложение
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {

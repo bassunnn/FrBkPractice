@@ -1,0 +1,23 @@
+# Зависимости Node.js
+node_modules/
+package-lock.json
+
+# Переменные окружения (секреты)
+.env
+
+# Настройки Qwen Code
+.qwen/
+
+# Скрипт генерации иконок (не нужен для продакшена)
+generate-icons.js
+
+# Лог-файлы
+*.log
+
+# Файлы ОС
+.DS_Store
+Thumbs.db
+
+# Временные файлы
+*.tmp
+*.swp
