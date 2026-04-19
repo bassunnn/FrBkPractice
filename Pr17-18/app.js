@@ -1,5 +1,7 @@
+console.log('App.js loaded v5');
+
 const STORAGE_KEY = 'notes';
-const VAPID_PUBLIC_KEY = 'BFGf-B2vW5O4i74gRYCcBm6gbyB_o78LQwfCoCv84eGZ-eYYQl82c898s0ehw4uXbwU8xUYUJHIrgynYb116NRU';
+let VAPID_PUBLIC_KEY = '';
 
 const appContent = document.getElementById('app-content');
 const statusBar = document.getElementById('statusBar');
@@ -16,6 +18,10 @@ let unsubscribeBtn;
 let reminderForm;
 let reminderTextInput;
 let reminderTimeInput;
+let reminderModal;
+let reminderModalBody;
+let snoozeBtn;
+let closeReminderBtn;
 
 function loadContent(page) {
   fetch(`/content/${page}.html`)
@@ -44,14 +50,20 @@ function updateNav(page) {
 }
 
 function initHomePage() {
+  console.log('initHomePage called');
   noteForm = document.getElementById('noteForm');
   noteInput = document.getElementById('noteInput');
   notesList = document.getElementById('notesList');
   subscribeBtn = document.getElementById('subscribeBtn');
   unsubscribeBtn = document.getElementById('unsubscribeBtn');
+  console.log('unsubscribeBtn element:', unsubscribeBtn);
   reminderForm = document.getElementById('reminderForm');
   reminderTextInput = document.getElementById('reminderText');
   reminderTimeInput = document.getElementById('reminderTime');
+  reminderModal = document.getElementById('reminderModal');
+  reminderModalBody = document.getElementById('reminderModalBody');
+  snoozeBtn = document.getElementById('snoozeBtn');
+  closeReminderBtn = document.getElementById('closeReminderBtn');
 
   loadNotes();
 
@@ -74,7 +86,33 @@ function initHomePage() {
     subscribeBtn.addEventListener('click', subscribeToPush);
   }
   if (unsubscribeBtn) {
-    unsubscribeBtn.addEventListener('click', unsubscribeFromPush);
+    console.log('Adding event listener to unsubscribeBtn');
+    unsubscribeBtn.addEventListener('click', () => {
+      console.log('Unsubscribe button clicked');
+      unsubscribeFromPush();
+    });
+  }
+
+  if (snoozeBtn) {
+    snoozeBtn.addEventListener('click', handleSnooze);
+  }
+  if (closeReminderBtn) {
+    closeReminderBtn.addEventListener('click', closeReminderModal);
+  }
+
+  // Закрытие модального окна по клику вне его или по Escape
+  if (reminderModal) {
+    reminderModal.addEventListener('click', event => {
+      if (event.target === reminderModal) {
+        closeReminderModal();
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && reminderModal.style.display === 'flex') {
+        closeReminderModal();
+      }
+    });
   }
 
   checkPushSubscription();
@@ -142,6 +180,7 @@ function addReminder() {
 
   if (socket) {
     try {
+      console.log('Emitting newReminder:', { id: newNote.id, text: newNote.text, reminderTime: reminderTimestamp });
       socket.emit('newReminder', {
         id: newNote.id,
         text: newNote.text,
@@ -218,6 +257,20 @@ function formatDate(isoString) {
   return date.toLocaleDateString('ru-RU', options);
 }
 
+async function fetchVapidPublicKey() {
+  if (VAPID_PUBLIC_KEY) return true;
+  try {
+    const response = await fetch('/vapidPublicKey');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    VAPID_PUBLIC_KEY = data.publicKey || '';
+    return !!VAPID_PUBLIC_KEY;
+  } catch (error) {
+    console.error('Ошибка получения VAPID ключа:', error);
+    return false;
+  }
+}
+
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)
@@ -236,6 +289,12 @@ async function subscribeToPush() {
     }
 
     const registration = await navigator.serviceWorker.ready;
+
+    const gotKey = await fetchVapidPublicKey();
+  if (!gotKey) {
+    showToast('Не удалось получить VAPID ключ');
+    return;
+  }
 
     const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
 
@@ -261,25 +320,27 @@ async function subscribeToPush() {
 }
 
 async function unsubscribeFromPush() {
+  console.log('unsubscribeFromPush called');
   try {
+    console.log('Getting registration...');
     const registration = await navigator.serviceWorker.ready;
+    console.log('Registration ready');
     const subscription = await registration.pushManager.getSubscription();
-
+    console.log('Subscription:', subscription);
     if (!subscription) {
       showToast('Уведомления уже отключены');
       return;
     }
-
     const endpoint = subscription.endpoint;
-
+    console.log('Endpoint:', endpoint);
     await subscription.unsubscribe();
-
+    console.log('Unsubscribed locally');
     await fetch('/unsubscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ endpoint })
     });
-
+    console.log('Unsubscribed on server');
     showToast('Уведомления отключены');
     updatePushButtons(false);
   } catch (error) {
@@ -289,12 +350,16 @@ async function unsubscribeFromPush() {
 }
 
 async function checkPushSubscription() {
+  console.log('checkPushSubscription called');
   try {
+    console.log('Getting registration for check...');
     const registration = await navigator.serviceWorker.ready;
+    console.log('Registration ready for check');
     const subscription = await registration.pushManager.getSubscription();
-
+    console.log('Subscription found:', subscription);
     if (subscription) {
       const permission = Notification.permission;
+      console.log('Permission:', permission);
       if (permission === 'granted') {
         updatePushButtons(true);
       } else {
@@ -316,6 +381,42 @@ function updatePushButtons(isSubscribed) {
   } else {
     subscribeBtn.style.display = 'inline-block';
     unsubscribeBtn.style.display = 'none';
+  }
+}
+
+function showReminderModal(text, reminderId) {
+  if (!reminderModal || !reminderModalBody) return;
+
+  reminderModalBody.textContent = text;
+  reminderModal.dataset.reminderId = reminderId;
+  reminderModal.style.display = 'flex';
+
+  // Автофокус на кнопку "Закрыть" для удобства
+  if (closeReminderBtn) closeReminderBtn.focus();
+}
+
+function handleSnooze() {
+  const reminderId = reminderModal.dataset.reminderId;
+  if (!reminderId) return;
+
+  fetch(`/snooze?reminderId=${reminderId}`, { method: 'POST' })
+    .then(response => {
+      if (response.ok) {
+        showToast('Напоминание отложено на 5 минут');
+        closeReminderModal();
+      } else {
+        showToast('Ошибка отложения напоминания');
+      }
+    })
+    .catch(error => {
+      console.error('Ошибка snooze:', error);
+      showToast('Ошибка отложения напоминания');
+    });
+}
+
+function closeReminderModal() {
+  if (reminderModal) {
+    reminderModal.style.display = 'none';
   }
 }
 
@@ -343,14 +444,38 @@ function updateOnlineStatus() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then(registration => {
-        console.log('Service Worker зарегистрирован:', registration.scope);
-      })
-      .catch(error => {
-        console.error('Ошибка регистрации Service Worker:', error);
+    // Сначала unregister старые SW
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      registrations.forEach(reg => {
+        console.log('Unregistering old SW:', reg.scope);
+        reg.unregister();
       });
+    }).then(() => {
+      // Затем register новый
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then(registration => {
+          console.log('Service Worker зарегистрирован:', registration.scope);
+          // Принудительное обновление SW
+          registration.update();
+
+          // Обработка обновления SW
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Новый SW установлен, отправляем SKIP_WAITING для активации
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                console.log('Отправлено SKIP_WAITING');
+                showToast('Приложение обновлено, перезагрузите страницу');
+              }
+            });
+          });
+        })
+        .catch(error => {
+          console.error('Ошибка регистрации Service Worker:', error);
+        });
+    });
   } else {
     console.warn('Service Worker не поддерживается');
   }
@@ -401,6 +526,15 @@ function init() {
 
   registerServiceWorker();
   initSocket();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data && event.data.type === 'PUSH_RECEIVED') {
+        const payload = event.data.payload;
+        showReminderModal(payload.body, payload.reminderId);
+      }
+    });
+  }
 
   console.log('Приложение инициализировано');
 }

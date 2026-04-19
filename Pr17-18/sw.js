@@ -1,4 +1,4 @@
-const CACHE_NAME = 'notes-cache-v4';
+const CACHE_NAME = 'notes-cache-v5';
 
 const STATIC_ASSETS = [
   '/',
@@ -74,7 +74,7 @@ function cacheFirst(request) {
       console.log('[SW] Загрузка из сети:', request.url);
       return fetch(request)
         .then(networkResponse => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200 && request.method === 'GET') {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
           }
@@ -136,25 +136,51 @@ self.addEventListener('push', event => {
   }
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        const hasOpenClients = clientList.length > 0;
+
+        // Если есть открытые клиенты, отправляем сообщение им и не показываем системное уведомление
+        const notifyClientsPromise = Promise.all(clientList.map(client => {
+          return client.postMessage({
+            type: 'PUSH_RECEIVED',
+            payload: {
+              title: data.title,
+              body: data.body,
+              reminderId: data.reminderId
+            }
+          });
+        }));
+
+        // Показываем системное уведомление только если нет открытых клиентов
+        const showNotificationPromise = hasOpenClients ? Promise.resolve() : self.registration.showNotification(data.title, options);
+
+        return Promise.all([notifyClientsPromise, showNotificationPromise]);
+      })
   );
 });
 
 self.addEventListener('notificationclick', event => {
+  console.log('[SW] Notification click:', event.action, event.notification.data);
   const notification = event.notification;
   const action = event.action;
 
   if (action === 'snooze') {
     const reminderId = notification.data.reminderId;
+    console.log('[SW] Snoozing reminder:', reminderId);
     event.waitUntil(
       fetch(`/snooze?reminderId=${reminderId}`, { method: 'POST' })
-        .then(() => notification.close())
+        .then(response => {
+          console.log('[SW] Snooze response:', response.status);
+          notification.close();
+        })
         .catch(err => {
           console.error('[SW] Snooze failed:', err);
           notification.close();
         })
     );
   } else {
+    console.log('[SW] Closing notification');
     notification.close();
   }
 });
