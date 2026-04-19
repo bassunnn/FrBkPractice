@@ -74,7 +74,7 @@ function cacheFirst(request) {
       console.log('[SW] Загрузка из сети:', request.url);
       return fetch(request)
         .then(networkResponse => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200 && (request.method === 'GET' || request.method === 'HEAD')) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
           }
@@ -92,7 +92,7 @@ function cacheFirst(request) {
 function networkFirst(request) {
   return fetch(request)
     .then(networkResponse => {
-      if (networkResponse && networkResponse.status === 200) {
+      if (networkResponse && networkResponse.status === 200 && (request.method === 'GET' || request.method === 'HEAD')) {
         const responseClone = networkResponse.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
       }

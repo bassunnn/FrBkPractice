@@ -17,16 +17,19 @@ let unsubscribeBtn;
 function loadContent(page) {
   fetch(`/content/${page}.html`)
     .then(response => {
+      console.log(`Загрузка /content/${page}.html:`, response.status);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.text();
     })
     .then(html => {
+      console.log(`Контент загружен: ${page}`);
       appContent.innerHTML = html;
       if (page === 'home') initHomePage();
       updateNav(page);
     })
     .catch(error => {
       console.error('Ошибка загрузки контента:', error);
+      console.error('URL:', `/content/${page}.html`);
       if (page !== 'home') {
         loadContent('home');
       } else {
@@ -223,18 +226,24 @@ async function checkPushSubscription() {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
 
-    if (subscription) {
+    const isSubscribed = subscription !== null;
+    
+    if (isSubscribed) {
       const permission = Notification.permission;
       if (permission === 'granted') {
         updatePushButtons(true);
+        return true;
       } else {
         updatePushButtons(false);
+        return false;
       }
     } else {
       updatePushButtons(false);
+      return false;
     }
   } catch (error) {
     console.error('Ошибка проверки подписки:', error);
+    return false;
   }
 }
 
@@ -273,30 +282,52 @@ function updateOnlineStatus() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
+    console.log('Service Worker поддерживается, регистрируем...');
     navigator.serviceWorker
       .register('/sw.js')
       .then(registration => {
-        console.log('Service Worker зарегистрирован:', registration.scope);
+        console.log('✓ Service Worker зарегистрирован:', registration.scope);
       })
       .catch(error => {
-        console.error('Ошибка регистрации Service Worker:', error);
+        console.error('✗ Ошибка регистрации Service Worker:', error);
       });
   } else {
-    console.warn('Service Worker не поддерживается');
+    console.warn('⚠ Service Worker не поддерживается браузером');
   }
 }
 
 function initSocket() {
   try {
-    socket = io('https://localhost:3000');
+    console.log('Инициализация WebSocket на URL:', window.location.origin);
+    
+    socket = io(window.location.origin, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+      transports: ['websocket', 'polling']
+    });
 
     socket.on('connect', () => {
-      console.log('WebSocket подключен');
+      console.log('✓ WebSocket подключен, ID:', socket.id);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('⚠ WebSocket отключен, причина:', reason);
     });
 
     socket.on('taskAdded', task => {
       console.log('Новая заметка через WebSocket:', task);
-      showToast(`Новая заметка: ${task.text.substring(0, 50)}${task.text.length > 50 ? '...' : ''}`);
+      
+      // Проверяем, подписан ли пользователь перед выбросом уведомления
+      checkPushSubscription().then(isSubscribed => {
+        if (isSubscribed) {
+          showToast(`Новая заметка: ${task.text.substring(0, 50)}${task.text.length > 50 ? '...' : ''}`);
+        }
+      }).catch(error => {
+        console.error('Ошибка проверки подписки:', error);
+      });
+      
       const notes = getNotesFromStorage();
       const exists = notes.some(n => n.text === task.text && n.createdAt === task.datetime);
       if (!exists) {
@@ -312,18 +343,46 @@ function initSocket() {
     });
 
     socket.on('connect_error', error => {
-      console.error('Ошибка WebSocket:', error);
+      console.error('✗ Ошибка подключения WebSocket:', error);
+    });
+    
+    socket.on('error', error => {
+      console.error('✗ Ошибка Socket.IO:', error);
     });
   } catch (error) {
-    console.error('Ошибка инициализации WebSocket:', error);
+    console.error('✗ Критическая ошибка инициализации WebSocket:', error);
   }
 }
 
 function init() {
+  console.log('=== Инициализация приложения ===');
+  
+  // Проверка наличия необходимых элементов DOM
+  if (!appContent) {
+    console.error('Элемент app-content не найден!');
+    return;
+  }
+  if (!statusBar || !statusText) {
+    console.error('Элементы статуса не найдены!');
+    return;
+  }
+  if (!navHome || !navAbout) {
+    console.error('Элементы навигации не найдены!');
+    return;
+  }
+  
+  console.log('✓ Все элементы DOM найдены');
+  
   loadContent('home');
 
-  navHome.addEventListener('click', () => loadContent('home'));
-  navAbout.addEventListener('click', () => loadContent('about'));
+  navHome.addEventListener('click', () => {
+    console.log('Клик на "Главная"');
+    loadContent('home');
+  });
+  navAbout.addEventListener('click', () => {
+    console.log('Клик на "О приложении"');
+    loadContent('about');
+  });
 
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
@@ -332,11 +391,14 @@ function init() {
   registerServiceWorker();
   initSocket();
 
-  console.log('Приложение инициализировано');
+  console.log('✓ Приложение инициализировано успешно');
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM загружен, инициализируем приложение');
+  try {
+    init();
+  } catch (error) {
+    console.error('Критическая ошибка инициализации:', error);
+  }
+});
